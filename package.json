@@ -1,0 +1,28 @@
+{
+  "name": "zk-checkpoint-poc",
+  "version": "1.0.0",
+  "description": "Proof of Concept implementation to checkpoint a PoS chain using ZKPs",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --max-old-space-size=4000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prabal-banerjee/zk-checkpoint-poc.git"
+  },
+  "author": "Prabal Banerjee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prabal-banerjee/zk-checkpoint-poc/issues"
+  },
+  "homepage": "https://github.com/prabal-banerjee/zk-checkpoint-poc#readme",
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "circom_tester": "^0.0.9",
+    "circomlibjs": "^0.1.1",
+    "mocha": "^9.1.3"
+  }
+}
