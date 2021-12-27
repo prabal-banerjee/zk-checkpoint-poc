@@ -19,29 +19,35 @@ include "./poseidon.circom";
 // input: public key of old validator set, public key of new validator set
 // TODO: add weights
 template VerifyCheckpoint(old, new){
-    signal input oldValidatorSet[old];
-    signal input newValidatorSet[new];
-    signal input checkpoint[3];         // checkpoint = (oldhash, newhash, checkpointRoot)
+    signal input oldValidatorSet[old*2];
+    // signal input newValidatorSet[new];
+    // signal input checkpoint[3];         // checkpoint = (oldhash, newhash, checkpointRoot)
+    signal input checkpoint;         
 
-    component oldValidatorSetHash = Poseidon(old);
-    for (var i = 0; i < old; i++){
+    // log(oldValidatorSet[0]);
+
+    component oldValidatorSetHash = Poseidon(old*2);
+    for (var i = 0; i < old*2; i+=2){
         oldValidatorSetHash.inputs[i] <== oldValidatorSet[i];
+        oldValidatorSetHash.inputs[i+1] <== oldValidatorSet[i+1];
     }
-    component newValidatorSetHash = Poseidon(new);
-    for (var i = 0; i < new; i++){
-        newValidatorSetHash.inputs[i] <== newValidatorSet[i];
-    }
+    // component newValidatorSetHash = Poseidon(new);
+    // for (var i = 0; i < new; i++){
+    //     newValidatorSetHash.inputs[i] <== newValidatorSet[i];
+    // }
+    // log(checkpoint[0]);
+    // log(checkpoint[1]);
+    // log(checkpoint[2]);
+    log(checkpoint);
+    log(oldValidatorSetHash.out);
     
-    checkpoint[0] === oldValidatorSetHash.out;
-    checkpoint[1] === newValidatorSetHash.out;
+    checkpoint === oldValidatorSetHash.out;
+    // checkpoint[1] === newValidatorSetHash.out;
 
     // Verify signature
     signal output out;
     out <== 1;
 }
 
-component main {
-    public [checkpoint]
-    } = VerifyCheckpoint(5, 5);
 
     
