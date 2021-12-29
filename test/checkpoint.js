@@ -8,24 +8,7 @@ const buildEddsa = require("circomlibjs").buildEddsa;
 const buildBabyjub = require("circomlibjs").buildBabyjub;
 const buildPoseidon = require("circomlibjs").buildPoseidon;
 
-const Scalar = require("ffjavascript").Scalar;
-
 const assert = chai.assert;
-
-function buffer2bits(buff) {
-    const res = [];
-    for (let i=0; i<buff.length; i++) {
-        for (let j=0; j<8; j++) {
-            if ((buff[i]>>j)&1) {
-                res.push(1n);
-            } else {
-                res.push(0n);
-            }
-        }
-    }
-    return res;
-}
-
 
 describe("checkpoint verification test", function () {
     let circuit;
@@ -49,17 +32,17 @@ describe("checkpoint verification test", function () {
     it("Submit a checkpoint", async () => {
 
         var oldValidatorSet = [];
+        var oldValidatorSetPvtKeys = [];
 
         for(var i=0; i<SIZE; i++) {
             var prvKey = crypto.randomBytes(32);
+            oldValidatorSetPvtKeys.push(prvKey);
+
             var pubKey = eddsa.prv2pub(prvKey);
             var pubKeyX = F.toObject(pubKey[0]);
             var pubKeyY = F.toObject(pubKey[1]);
-            // var pPubKey = babyJub.packPoint(pubKey);
-            // var pubKeyBits = buffer2bits(pPubKey);
             oldValidatorSet.push(pubKeyX);
             oldValidatorSet.push(pubKeyY);
-            // oldValidatorSet.push(pPubKey);
         }
         console.log(oldValidatorSet);
 
@@ -77,20 +60,25 @@ describe("checkpoint verification test", function () {
         // }
         // console.log(newValidatorSet);
 
-        var oldValidatorSetHash = F.toObject(poseidon(oldValidatorSet));
+        var oldValidatorSetHash = poseidon(oldValidatorSet);
         // var newValidatorSetHash = poseidon(newValidatorSet);
         // var checkpoint = [oldValidatorSetHash, newValidatorSetHash, 0];
         var checkpoint = oldValidatorSetHash;
 
-        console.log("Checkpoint (js): ", checkpoint);
+        // Sign checkpoint
+        var signature = eddsa.signPoseidon(oldValidatorSetPvtKeys[0], checkpoint);
+
+        assert(eddsa.verifyPoseidon(checkpoint, signature, eddsa.prv2pub(oldValidatorSetPvtKeys[0])));
 
         const w = await circuit.calculateWitness({
             oldValidatorSet: oldValidatorSet, 
             // newValidatorSet: newValidatorSet, 
-            checkpoint: checkpoint
+            checkpoint: F.toObject(checkpoint),
+            Validator1R8x: F.toObject(signature.R8[0]),
+            Validator1R8y: F.toObject(signature.R8[1]),
+            Validator1S: signature.S
         }, true);
 
         await circuit.checkConstraints(w);
-        //assert output
     });
 });
