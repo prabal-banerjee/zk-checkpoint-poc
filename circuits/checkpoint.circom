@@ -26,19 +26,23 @@ template VerifyCheckpoint(oldValidatorSetSize, newValidatorSetSize){
     checkpoint === oldValidatorSetHash.out;
 
     // Verify signature
-    component ValidatorSigCheck = EdDSAPoseidonVerifier();
+    component ValidatorSigCheck[oldValidatorSetSize];
 
-    signal input Validator1R8x;
-    signal input Validator1R8y;
-    signal input Validator1S;
+    signal input validatorsR8x[oldValidatorSetSize];
+    signal input validatorsR8y[oldValidatorSetSize];
+    signal input validatorsS[oldValidatorSetSize];
 
-    ValidatorSigCheck.enabled <== 1;
-    ValidatorSigCheck.Ax <== oldValidatorSet[0];
-    ValidatorSigCheck.Ay <== oldValidatorSet[1];
-    ValidatorSigCheck.R8x <== Validator1R8x;
-    ValidatorSigCheck.R8y <== Validator1R8y;
-    ValidatorSigCheck.S <== Validator1S;
-    ValidatorSigCheck.M <== checkpoint;
+    for (var i = 0; i < oldValidatorSetSize; i++){
+        ValidatorSigCheck[i] = EdDSAPoseidonVerifier();
+        ValidatorSigCheck[i].enabled <== 1;
+        ValidatorSigCheck[i].Ax <== oldValidatorSet[i*2];
+        ValidatorSigCheck[i].Ay <== oldValidatorSet[i*2 + 1];
+        ValidatorSigCheck[i].R8x <== validatorsR8x[i];
+        ValidatorSigCheck[i].R8y <== validatorsR8y[i];
+        ValidatorSigCheck[i].S <== validatorsS[i];
+        ValidatorSigCheck[i].M <== checkpoint;
+    }
+    
 
 }
 

@@ -66,17 +66,25 @@ describe("checkpoint verification test", function () {
         var checkpoint = oldValidatorSetHash;
 
         // Sign checkpoint
-        var signature = eddsa.signPoseidon(oldValidatorSetPvtKeys[0], checkpoint);
+        var validatorsSignature = [];
+        var validatorsR8x = [];
+        var validatorsR8y = [];
+        for(var i=0; i<SIZE; i++){
+            var signature = eddsa.signPoseidon(oldValidatorSetPvtKeys[i], checkpoint);
+            assert(eddsa.verifyPoseidon(checkpoint, signature, eddsa.prv2pub(oldValidatorSetPvtKeys[i])));
 
-        assert(eddsa.verifyPoseidon(checkpoint, signature, eddsa.prv2pub(oldValidatorSetPvtKeys[0])));
+            validatorsSignature.push(signature.S);
+            validatorsR8x.push(F.toObject(signature.R8[0]));
+            validatorsR8y.push(F.toObject(signature.R8[1]));
+        }
 
         const w = await circuit.calculateWitness({
             oldValidatorSet: oldValidatorSet, 
             // newValidatorSet: newValidatorSet, 
             checkpoint: F.toObject(checkpoint),
-            Validator1R8x: F.toObject(signature.R8[0]),
-            Validator1R8y: F.toObject(signature.R8[1]),
-            Validator1S: signature.S
+            validatorsR8x: validatorsR8x,
+            validatorsR8y: validatorsR8y,
+            validatorsS: validatorsSignature
         }, true);
 
         await circuit.checkConstraints(w);
