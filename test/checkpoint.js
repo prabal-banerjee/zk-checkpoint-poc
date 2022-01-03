@@ -33,6 +33,7 @@ describe("checkpoint verification test", function () {
 
         var oldValidatorSet = [];
         var oldValidatorSetPvtKeys = [];
+        var oldValidatorSetWeights = [1,2,3,4,5];
 
         for(var i=0; i<SIZE; i++) {
             var prvKey = crypto.randomBytes(32);
@@ -43,6 +44,7 @@ describe("checkpoint verification test", function () {
             var pubKeyY = F.toObject(pubKey[1]);
             oldValidatorSet.push(pubKeyX);
             oldValidatorSet.push(pubKeyY);
+            oldValidatorSet.push(oldValidatorSetWeights[i]);
         }
         console.log(oldValidatorSet);
 
@@ -78,13 +80,16 @@ describe("checkpoint verification test", function () {
             validatorsR8y.push(F.toObject(signature.R8[1]));
         }
 
+        var validatorsIsSigned = [0,1,1,1,1];
+
         const w = await circuit.calculateWitness({
             oldValidatorSet: oldValidatorSet, 
             // newValidatorSet: newValidatorSet, 
             checkpoint: F.toObject(checkpoint),
             validatorsR8x: validatorsR8x,
             validatorsR8y: validatorsR8y,
-            validatorsS: validatorsSignature
+            validatorsS: validatorsSignature,
+            validatorsIsSigned: validatorsIsSigned
         }, true);
 
         await circuit.checkConstraints(w);
